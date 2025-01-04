@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lesen und Feedback</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Comic Neue', cursive;
+            text-align: center;
+            padding: 20px;
+            background-color: #ffebcd;
+        }
+        h1 {
+            color: #ff4500;
+        }
+        p {
+            font-size: 24px;
+            color: #4b0082;
+        }
+        #feedback {
+            margin-top: 20px;
+            font-size: 20px;
+            color: red;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #start-recording {
+            background-color: #32cd32;
+            color: white;
+        }
+        #stop-recording {
+            background-color: #ff6347;
+            color: white;
+        }
+        #text-to-read {
+            margin: 20px 0;
+            background-color: #fafad2;
+            padding: 20px;
+            border-radius: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Willkommen zur Lesespiel-App!</h1>
+    <p>Bitte lese den folgenden Text vor:</p>
+    <p id="text-to-read"></p>
+
+    <button id="start-recording">Aufnahme starten</button>
+    <button id="stop-recording" disabled>Aufnahme stoppen</button>
+
+    <div id="feedback"></div>
+
+    <script>
+        const sentences = [
+            "Die Katze sitzt auf der Matte.",
+            "Der Hund bellt im Garten.",
+            "Der Vogel fliegt in den Himmel.",
+            "Das Auto fährt die Straße entlang.",
+            "Das Pferd galoppiert über die Wiese.",
+            "Der Fisch schwimmt im Teich.",
+            "Das Kind spielt im Sandkasten.",
+            "Der Zug fährt durch den Tunnel.",
+            "Der Bär schläft im Wald.",
+            "Die Blume blüht im Garten."
+        ];
+
+        function getRandomSentence() {
+            const randomIndex = Math.floor(Math.random() * sentences.length);
+            return sentences[randomIndex];
+        }
+
+        document.getElementById('text-to-read').innerText = getRandomSentence();
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        document.getElementById('start-recording').onclick = async () => {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            mediaRecorder = new MediaRecorder(stream);
+            mediaRecorder.start();
+
+            mediaRecorder.ondataavailable = event => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = () => {
+                const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+                audioChunks = [];
+
+                // Hier wird das Feedback generiert
+                const feedbackArray = [
+                    "Das war nicht so gut. Versuche es noch einmal.",
+                    "Hmm, es gibt noch Raum für Verbesserung. Übe weiter!",
+                    "Du kannst das besser. Probiere es noch einmal.",
+                    "Das war nicht perfekt. Bitte versuche es erneut."
+                ];
+                const randomFeedback = feedbackArray[Math.floor(Math.random() * feedbackArray.length)];
+                document.getElementById('feedback').innerText = randomFeedback;
+            };
+
+            document.getElementById('start-recording').disabled = true;
+            document.getElementById('stop-recording').disabled = false;
+        };
+
+        document.getElementById('stop-recording').onclick = () => {
+            mediaRecorder.stop();
+            document.getElementById('start-recording').disabled = false;
+            document.getElementById('stop-recording').disabled = true;
+        };
+    </script>
+
+</body>
+</html>
